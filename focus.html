@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head>
+<title></title>
+<link rel="stylesheet" href="focus.css">
+<script src="focus.js"></script>
+</head>
+<body>
+
+<div id="form"></div>
+
+<div id="container">
+<iframe id="iframe"></iframe>
+</div>
+
+<script>
+
+makeForm();
+
+var opts = {
+  method:'GET',
+  url:'https://hypothes.is/api/profile',
+  headers: makeHeaders(),
+}
+
+http(opts).then(function(data){
+  groups = JSON.parse(data).groups;
+  makeGroupList(groups);
+  var url = getUrl();
+  load(0, url);
+});
+
+</script>
+
+</body>
+</html>

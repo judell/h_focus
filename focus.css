@@ -1,0 +1,30 @@
+#iframe {
+  width:100%;
+  height:800px;
+  margin-top:30px;
+}
+
+#form {
+  display:flex;
+  justify-content:space-around;
+  font-size:larger;
+} 
+
+.field{
+  margin:10px;
+}
+
+body { 
+  font-family: verdana; 
+  margin:20px;
+}
+
+.info { 
+ font-size:smaller;
+ font-weight:bold;
+}
+
+.small {
+  font-size:smaller;
+}
+
