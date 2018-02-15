@@ -103,6 +103,9 @@ function getUrl() {
 function getUser() {
   var userList = document.getElementById('userlist');
   var index = userList.options.selectedIndex;
+  if (index === -1) {
+    return '';
+  }
   return userList[index].value;
 }
 
