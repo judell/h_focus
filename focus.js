@@ -2,6 +2,8 @@ var groups = {}
 
 var usersForUrl = [];
 
+var annosForGroups;
+
 function firstUser() {
   return usersForUrl[0];
 }
@@ -41,13 +43,18 @@ function makeGroupList(groups) {
   var groupList = document.getElementById('grouplist');
   groupList.innerHTML = '';
   groups.forEach(function(group) {
-    var option = document.createElement('option');
-    option.value = group.id;
-    if (group.id === savedGroupId) {
-      option.selected = 1;
-    }
-    option.innerText = group.name;
-    groupList.appendChild(option);
+
+    var count = annosForGroups[group.id];
+
+	if ( count ) {
+      var option = document.createElement('option');
+      option.value = group.id;
+      if (group.id === savedGroupId) {
+        option.selected = 1;
+      }
+      option.innerText = group.name + ' (' + count + ')';
+      groupList.appendChild(option);
+	}
   });
 }
 
@@ -140,6 +147,9 @@ function getSavedToken() {
 }
 
 function load(offset, url, users) {
+
+  annosForGroups = defaultDict(function() { return 0; });
+
   if (! users ) {
     usersForUrl = [];
   }
@@ -147,29 +157,55 @@ function load(offset, url, users) {
     usersForUrl = users;
   }
 
-  var group = getSavedGroup().id;
   var encodedUri = encodeURIComponent(url);
-  var apiCall = `https://hypothes.is/api/search?uri=${encodedUri}&limit=200&offset=${offset}&group=${group}`;
+  var apiCall = `https://hypothes.is/api/search?uri=${encodedUri}&limit=200&offset=${offset}`;
+
   var opts = {
     method:'GET',
     url:apiCall,
   }
+
   if ( getSavedToken() !== '' ) {
       opts.headers = makeHeaders();
   }
 
   http(opts).then(function(data) {
+
     var rows = JSON.parse(data).rows;
     rows.forEach(function(row) {
-      var username = row.user.replace('acct:','').replace('@hypothes.is','');
-      if ( usersForUrl.indexOf(username) == -1 ) {
-        usersForUrl.push(username);
+	  var group = row.group;
+      if ( Object.keys(annosForGroups).indexOf(group) === -1 ) {
+        annosForGroups[group] = 1;
+	  }
+	  else {
+        annosForGroups[group] += 1;
       }
     });
-    usersForUrl.sort(compareUser);
-    makeUserList();
-    makeFrame(url, firstUser());
-    setLink();  
+    makeGroupList(groups);
+    return true;
+
+	}).then(function(annosForGroups) {
+
+    var group = getSavedGroup().id;
+    encodedUri = encodeURIComponent(url);
+    apiCall = `https://hypothes.is/api/search?uri=${encodedUri}&limit=200&offset=${offset}&group=${group}`;
+    opts.method = 'GET';
+    opts.url = apiCall;
+
+    http(opts).then(function(data) {
+      var rows = JSON.parse(data).rows;
+      rows.forEach(function(row) {
+        var username = row.user.replace('acct:','').replace('@hypothes.is','');
+        if ( usersForUrl.indexOf(username) == -1 ) {
+          usersForUrl.push(username);
+        }
+      });
+      usersForUrl.sort(compareUser);
+      makeUserList();
+      makeFrame(url, firstUser());
+      setLink();
+    });
+
   });
 }
 
@@ -253,3 +289,25 @@ function http (opts) {
   });
 }
 
+
+// https://stackoverflow.com/questions/42235355/javascript-defaultdict-without-library
+
+function defaultDict(createValue) {
+    return new Proxy(Object.create(null), {
+        get(storage, property) {
+            if (!(property in storage))
+                storage[property] = createValue(property);
+            return storage[property];
+        },
+		set(storage, property, value) {
+			storage[property] = value;
+		}
+    });
+}
+
+/*
+var m = defaultdict(function() { return [] });
+m["asdf"].push(0);
+m["qwer"].push("foo");
+Object.keys(m).forEach(console.log);
+*/

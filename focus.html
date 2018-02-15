@@ -17,15 +17,14 @@
 
 makeForm();
 
-var opts = {
+var profileOpts = {
   method:'GET',
   url:'https://hypothes.is/api/profile',
   headers: makeHeaders(),
 }
 
-http(opts).then(function(data){
+http(profileOpts).then(function(data) {
   groups = JSON.parse(data).groups;
-  makeGroupList(groups);
   var url = getUrl();
   load(0, url);
 });
