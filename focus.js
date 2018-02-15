@@ -117,8 +117,6 @@ function getGroup() {
     'id':group.value,
     'name':group.innerText,
   }
-
-  return userList[index].value;
 }
 
 function getSavedGroup() {
