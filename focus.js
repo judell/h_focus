@@ -10,7 +10,7 @@ function firstUser() {
 
 function makeFrame(url, user) {
 
-  var iframeUrl = `https://via.hypothes.is/${url}#annotations:query:user%3A${user}`;
+  var iframeUrl = `https://via.jonudell.info/${url}#annotations:query:user%3A${user}`;
 
   var frame = document.querySelector('#iframe');
   var container = document.querySelector('#container');
@@ -129,12 +129,14 @@ function getGroup() {
 function getSavedGroup() {
   var group = JSON.parse(localStorage.getItem('h_group'));
   if (group) {
+    setGroup(group.id);
     return {
       'id':group.id,
       'name':group.name,
     }
   }
   else {
+    setGroup('__world__');
     return {
       'id':'__world__',
       'name':'Public',
@@ -233,11 +235,17 @@ function changeUser() {
   setLink();
 }
 
+function setGroup(groupId) {
+  var targetWindow = document.getElementsByTagName('iframe')[0].contentWindow;
+  targetWindow.postMessage('group:' + groupId, 'https://via.jonudell.info');
+}
+
 function changeGroup() {
   var group = getGroup();
   localStorage.setItem('h_group', JSON.stringify({'id':group.id, 'name':group.name}));
   var url = getUrl();
   load(0, url);
+  setGroup(group.id);
 }
 
 
